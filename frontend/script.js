@@ -17,7 +17,8 @@ async function sendAudioToBackend(fileOrBlob, filename) {
   resultDiv.innerText = '';
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/transcribe](http://127.0.0.1:8000/transcribe', {
+    // FIX: URL ko sahi kar diya gaya hai
+    const response = await fetch('http://127.0.0.1:8000/transcribe', {
       method: 'POST',
       body: formData
     });
