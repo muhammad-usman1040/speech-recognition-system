@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: speech-recognition-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - WHISPER_MODEL=base
+    command: python main.py
+    networks:
+      - speech-network
+
+  frontend:
+    image: nginx:latest
+    container_name: speech-recognition-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - speech-network
+
+networks:
+  speech-network:
+    driver: bridge
+
+volumes:
+  uploads:
