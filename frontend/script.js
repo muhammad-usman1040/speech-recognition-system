@@ -17,7 +17,7 @@ async function sendAudioToBackend(fileOrBlob, filename) {
   resultDiv.innerText = '';
 
   try {
-    const response = await fetch('https://aapka-copied-link/transcribe', {
+    const response = await fetch('https://0aa7f5efa8364b.lhr.life/transcribe', {
       method: 'POST',
       body: formData
     });
