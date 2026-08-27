@@ -69,3 +69,16 @@ async def transcribe_audio(file: UploadFile = File(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+#ya_kaam_for_deploying_hugging_face
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Static CSS/JS serving
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
+# Direct index.html open karne ke liye
+@app.get("/")
+async def read_index():
+    return FileResponse('frontend/index.html')
