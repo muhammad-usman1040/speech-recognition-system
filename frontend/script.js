@@ -8,12 +8,12 @@ const stopBtn = document.getElementById('stopBtn');
 const resultDiv = document.getElementById('result');
 const loadingDiv = document.getElementById('loading');
 
-// Common function for API requests
-async function sendAudioToBackend(fileOrBlob, filename = 'audio.wav') {
+// Backend API Request Function
+async function sendAudioToBackend(fileOrBlob, filename) {
   const formData = new FormData();
   formData.append('file', fileOrBlob, filename);
 
-  loadingDiv.classList.remove('hidden');
+  loadingDiv?.classList.remove('hidden');
   resultDiv.innerText = '';
 
   try {
@@ -31,11 +31,11 @@ async function sendAudioToBackend(fileOrBlob, filename = 'audio.wav') {
   } catch (error) {
     resultDiv.innerText = "Server Error: Backend running nahi hai ya connection fail hua.";
   } finally {
-    loadingDiv.classList.add('hidden');
+    loadingDiv?.classList.add('hidden');
   }
 }
 
-// 1. File Upload Handler
+// 1. File Upload Event Handler
 uploadBtn.addEventListener('click', () => {
   if (!audioFileInput.files[0]) {
     alert('Pehle audio file choose karein!');
@@ -44,33 +44,39 @@ uploadBtn.addEventListener('click', () => {
   sendAudioToBackend(audioFileInput.files[0], audioFileInput.files[0].name);
 });
 
-// 2. Start Mic Recording
+// 2. Start Live Recording
 recordBtn.addEventListener('click', async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    
+    // Browser ka native supported audio type detect karein (webm ya ogg)
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
     audioChunks = [];
 
     mediaRecorder.ondataavailable = (event) => {
-      audioChunks.push(event.data);
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
     };
 
     mediaRecorder.onstop = async () => {
       stream.getTracks().forEach(track => track.stop());
-      const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      await sendAudioToBackend(audioBlob, 'live_audio.wav');
+      const audioBlob = new Blob(audioChunks, { type: mimeType });
+      const ext = mimeType.includes('webm') ? 'webm' : 'ogg';
+      await sendAudioToBackend(audioBlob, `live_audio.${ext}`);
     };
 
     mediaRecorder.start();
     recordBtn.disabled = true;
     stopBtn.disabled = false;
-    resultDiv.innerText = "🎙️ Recording chal rahi hai... Abhi bolna shuru karein!";
+    resultDiv.innerText = "🎙️ Recording chal rahi hai... Bolna shuru karein!";
   } catch (err) {
-    alert("Microphone permission issue: " + err.message);
+    alert("Microphone permission error: " + err.message);
   }
 });
 
-// 3. Stop Mic Recording
+// 3. Stop Live Recording
 stopBtn.addEventListener('click', () => {
   if (mediaRecorder && mediaRecorder.state !== "inactive") {
     mediaRecorder.stop();
